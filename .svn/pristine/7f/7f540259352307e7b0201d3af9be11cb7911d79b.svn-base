@@ -1,0 +1,518 @@
+//
+//  MyShowViewController.m
+//  iGig
+//
+//  Created by mac on 15/10/21.
+//  Copyright (c) 2015年 longlz. All rights reserved.
+//
+//我的演出
+
+#import "MyShowViewController.h"
+#import "LDSegmentControl.h"
+#import "ShowNullTableViewCell.h"
+#import "ShowWaitingTableViewCell.h"
+#import "ShowTableViewCell.h"
+#import "ChooseViewController.h"
+#import "StateShowViewController.h"
+#import "AcceptShowStateViewController.h"
+#import "PublishShowViewController.h"
+#import "FinishViewController.h"
+#import "ApplicationShowViewController.h"
+#import "WaitingpublishShowViewController.h"
+#import "ShowDeatilEditViewController.h"
+#import "IGShowManager.h"
+#import "IGHomeModel.h"
+#import "ShowNullTableViewCell.h"
+#import "ShowWaitingTableViewCell.h"
+#import "AcceptShowStateViewController.h"
+#import "ApplicationShowViewController.h"
+#import "DetailShowViewController.h"
+#import "CloseShowViewController.h"
+#import "ApplicationPublishViewController.h"
+
+typedef enum {
+    MyShowStatusTypeWating,  //待处理
+    MyShowStatusTypeIssue,   //已发布
+    MyShowStatusTypeExpired, //已过期
+    MyShowStatusTypeClose    //已关闭
+    
+}MyShowStatusType;
+
+@interface MyShowViewController ()<UITableViewDataSource,UITableViewDelegate>
+
+{
+    BOOL _isLoading;
+    NSInteger _from;
+    BOOL _isFootRefresh;
+}
+
+@property(nonatomic,strong)UITableView *tableView;
+
+@property(nonatomic)MyShowStatusType showType;
+@property(nonatomic,strong)LDSegmentControl *segmentControl;
+@property(nonatomic, assign)   NSInteger          currentIndex;
+@property(nonatomic,strong)NSMutableArray *dataArray;
+@property(nonatomic,strong)IGHomeModel *model;
+@property(nonatomic,assign)NSInteger currentPage;
+
+@end
+
+@implementation MyShowViewController
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [[NSUserDefaults standardUserDefaults] setObject:@"1" forKey:@"userType"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    
+    if (!_isRefreshing) {
+        [self requestData];
+    }
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self resetUI];
+    
+}
+
+- (void)resetUI
+{
+    self.title = @"我的演出";
+    self.segmentControl = [[LDSegmentControl alloc]initWithTitles:@[@"待处理",@"已发布",@"已过期",@"已关闭"] selected:^(NSInteger index) {
+        _from = 0;
+        _isFootRefresh = NO;
+        self.currentIndex = index;
+        [self requestData];
+//        [self.tableView reloadData];
+    }];
+    
+    [self.view addSubview:self.segmentControl];
+    [self.segmentControl makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(@64);
+        make.left.and.right.equalTo(@0);
+        make.height.equalTo(@45);
+        
+    }]; 
+    self.currentIndex = 0;
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(10, 109, SCREEN_WIDTH-20, SCREEN_HEIGHT-109)];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.backgroundColor = RGBACOLOR(75, 75, 75, 1);
+    _isActive = YES;
+    
+
+    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        _from = 0;
+        [self requestData];
+    }];
+    
+    _tableView.mj_footer = [MJRefreshBackNormalFooter footerWithRefreshingBlock:^{
+        _from += 10;
+        _isFootRefresh = YES;
+        [self requestData];
+    }];
+//
+    
+    [self.view addSubview:self.tableView];
+    
+}
+
+- (void)requestData
+{
+    
+    if (_isLoading) {
+        return;
+    }
+    
+    _isLoading = YES;
+    NSLog(@"-------%ld", self.currentIndex+1);
+//    [_dataArray removeAllObjects];
+    _currentPage = 0;
+    [[IGShowManager sharedInstance] myShowListWithFrom:[NSNumber numberWithInteger:_from] limit:@10 type:[NSNumber numberWithInteger:self.currentIndex+1] utoken:[IGCustData sharedInstance].token isHub:YES success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSArray *array = responseObject[@"data"];
+        _isLoading = NO;
+        [self.tableView.mj_footer endRefreshing];
+        [self.tableView.mj_header endRefreshing];
+        if(_dataArray.count > 0  && _from == 0){
+            [_dataArray removeAllObjects];
+        }
+        if (array.count <= 0 && !_isFootRefresh) {
+            [MBProgressHUD showWithMessage:@"此选项暂无信息"];
+        }
+        for (NSDictionary *dict in array) {
+//             暂时过滤已过期
+            if([KConvertAllObjectToStrOrNil(dict[@"showStatus"]) isEqualToString:@"6"]){
+                continue;
+            }
+            if([KConvertAllObjectToStrOrNil(dict[@"showStatus"]) isEqualToString:@"10"]){
+                continue;
+            }
+            
+            [self.dataArray addObject:[IGHomeModel HomeModelWithDict:dict]];
+            
+        }
+//        [_tableView.header endRefreshing];
+        [_tableView reloadData];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+    }];
+    
+//    _isRefreshing = YES;
+//    NSLog(@"%magii%d",kIGUserType);
+//    [[IGShowManager sharedInstance] showListWithIsHub:YES success:^(AFHTTPRequestOperation *operation, id responseObject) {
+//        _isRefreshing = NO;
+//        _isActive = YES;
+//        [_dataArray removeAllObjects];
+//        NSDictionary *dict = (NSDictionary *)responseObject;
+//                if ([dict objectForKey:@"data"]) {
+//        
+//                    NSArray *array = [dict objectForKey:@"data"];
+//                    for (NSDictionary *dic in array) {
+//                        [self.dataArray addObject:[IGHomeModel HomeModelWithDict:dic]];
+//                        [_tableView reloadData];
+//                    }
+//                }
+//        
+//    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+//        _isRefreshing = NO;
+//        _isActive = YES;
+//    }];
+//    [[IGShowManager sharedInstance] myShowListWithFrom:@1 limit:@5 type:[NSNumber numberWithInt:kIGUserType] isHub:YES success:^(AFHTTPRequestOperation *operation, id responseObject) {
+//        
+//        _isRefreshing = NO;
+//        _isActive = YES;
+//        [_dataArray removeAllObjects];
+//        NSDictionary *dict = (NSDictionary *)responseObject;
+//        if ([dict objectForKey:@"data"]) {
+//            
+//            NSArray *array = [dict objectForKey:@"data"];
+//            for (NSDictionary *dic in array) {
+//                [self.dataArray addObject:[IGHomeModel HomeModelWithDict:dic]];
+//                [_tableView reloadData];
+//            }
+//        }
+//    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+//        _isRefreshing = NO;
+//        _isActive = YES;
+//    }];
+}
+
+- (void)requestMoreData
+{
+    _currentPage ++;
+    [[IGShowManager sharedInstance] myShowListWithFrom:[NSNumber numberWithInteger:_currentPage] limit:@10 type:[NSNumber numberWithInteger:self.currentIndex+1] utoken:[IGCustData sharedInstance].token isHub:NO success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSArray *array = responseObject[@"data"];
+        if (array.count > 0){
+            if(_dataArray.count > 0){
+                [_dataArray removeAllObjects];
+            }
+        }else{
+            [MBProgressHUD showWithMessage:@"此选项暂无信息"];
+        }
+        for (NSDictionary *dict in array) {
+            [self.dataArray addObject:[IGHomeModel HomeModelWithDict:dict]];
+            
+        }
+//        [_tableView.footer endRefreshing];
+        [_tableView reloadData];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+    }];
+}
+
+- (void)reloadData
+{
+    [self requestData];
+}
+
+- (void)headerRefresh
+{
+    _isActive = NO;
+    if (!_isRefreshing) {
+        [self requestData];
+    }
+}
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return _dataArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *nullCellID = @"nullCellID";
+    ShowNullTableViewCell *nullCell = (ShowNullTableViewCell *)[tableView dequeueReusableCellWithIdentifier:nullCellID];
+    static NSString *waitingCellID = @"waitingCellID";
+    ShowWaitingTableViewCell *waitingCell = (ShowWaitingTableViewCell *)[tableView dequeueReusableCellWithIdentifier:waitingCellID];
+    static NSString *showCellID = @"showCellID";
+    ShowTableViewCell *showCell = (ShowTableViewCell *)[tableView dequeueReusableCellWithIdentifier:showCellID];
+
+    _model = [[IGHomeModel alloc] init];
+    _model = _dataArray[indexPath.row];
+    NSString *showState = _model.showStatus;
+    if ([showState isEqualToString: @"11"]) {
+            if (nullCell == nil) {
+                nullCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowNullTableViewCell" owner:self options:nil] lastObject];
+            }
+        nullCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return nullCell;
+    }
+    //原先这里为2
+    else if([showState isEqualToString:@"0"] || [showState isEqualToString:@"2"] || [showState isEqualToString:@"7"] || [showState isEqualToString:@"10"])
+    {
+        if (waitingCell == nil) {
+            waitingCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowWaitingTableViewCell" owner:self options:nil] lastObject];
+        }
+        [waitingCell cellFillWithModel:_model];
+        waitingCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return waitingCell;
+    }
+    else
+    {
+        if (showCell  == nil) {
+            showCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowTableViewCell" owner:self options:nil] lastObject];
+        }
+        [showCell cellFillWithModel:_model];
+        
+        showCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return showCell;
+    }
+
+//    else if([showState isEqualToString:@"0"] || [showState isEqualToString:@"3"] || [showState isEqualToString:@"7"] || [showState isEqualToString:@"10"])
+//    {
+//        if (waitingCell == nil) {
+//            waitingCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowWaitingTableViewCell" owner:self options:nil] lastObject];
+//        }
+//        [waitingCell cellFillWithModel:_model];
+//        waitingCell.selectionStyle = UITableViewCellSelectionStyleNone;
+//        return waitingCell;
+//    }
+//   else
+//   {
+//    if (showCell  == nil) {
+//        showCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowTableViewCell" owner:self options:nil] lastObject];
+//    }
+//    [showCell cellFillWithModel:_model];
+//    
+//    showCell.selectionStyle = UITableViewCellSelectionStyleNone;
+//    return showCell;
+//   }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [ShowTableViewCell cellHeight];
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    IGHomeModel *model = self.dataArray[indexPath.row];
+    
+    //    PublishShowViewController *showVC = [[PublishShowViewController alloc] init];
+    //    [self.navigationController pushViewController:showVC animated:YES];
+    //
+    //0 演出机会（等待申请）  1演出  2有预约  3 申请后（等待同意和拒绝）  4已同意  5已拒绝   7已确定  8.已发布  9已关闭  10已过期  11虚位以待
+    //0 演出机会(等待申请)-- 等待演出
+   if([model.showStatus isEqualToString:@"0"])
+    {
+        
+        // 如果是场地方 -> 发布演出机会(查看页面,发布演出机会按钮不可点,只是作为查看发布的演出机会信息界面使用)
+        // 如果是主办方 ->  申请页面
+        //
+        if (kIGUserType == 1  ) {
+            
+            AcceptShowStateViewController *acceptVC = [[AcceptShowStateViewController alloc] init];
+            acceptVC.model = model;
+            acceptVC.enable = [model.fieldid isEqualToString:kIGCustId];
+            [self.navigationController pushViewController:acceptVC animated:YES];
+        }
+        else if(kIGUserType == 2)
+        {
+            ApplicationShowViewController *applicationVC = [[ApplicationShowViewController alloc] init];
+            applicationVC.enable = YES;
+            applicationVC.model = model;
+            [self.navigationController pushViewController:applicationVC animated:YES];
+        }
+        else{
+            ApplicationShowViewController *applicationVC = [[ApplicationShowViewController alloc] init];
+            applicationVC.enable = NO;
+            applicationVC.model = model;
+            [self.navigationController pushViewController:applicationVC animated:YES];
+        }
+    }
+    // 1演出
+    else if ([model.showStatus isEqualToString:@"1"]) {
+        // 演出详情页面
+        DetailShowViewController *showDetailVC = [[DetailShowViewController alloc] init];
+        showDetailVC.showId = [NSNumber numberWithInt:[model.mId intValue]];
+        [self.navigationController pushViewController:showDetailVC animated:YES];
+    }
+    //    2有预约
+    else if ([model.showStatus isEqualToString:@"2"]) {
+        // 场地方 可见 -> 演出状态:同意申请界面
+        // 如果此次演出机会不是场地方自己发布的.则里面的按钮不可点
+        
+        //        NSLog(@"field-----%@ ,myGuse_id =%@,%@",model.fieldid,kIGCustId,[model.fieldid isEqualToString:kIGCustId]?@"YES":@"NO");
+        
+        AcceptShowStateViewController *acceptVC = [[AcceptShowStateViewController alloc] init];
+        acceptVC.model = model;
+        acceptVC.enable = [model.fieldid isEqualToString:kIGCustId];
+        [self.navigationController pushViewController:acceptVC animated:YES];
+        
+    }
+    //    3 申请后（等待同意和拒绝）
+    else if ([model.showStatus isEqualToString:@"3"]) {
+        // 主办方可见 ->申请页面  申请按钮不可点
+        
+        ApplicationShowViewController *acceptVC = [[ApplicationShowViewController alloc] init];
+        acceptVC.enable = NO;
+        acceptVC.model = model;
+        [self.navigationController pushViewController:acceptVC animated:YES];
+        
+    }
+    //     4已同意
+    else if ([model.showStatus isEqualToString:@"4"] ) {
+        // 场地方 跳转到 -> [演出状态:发布演出]
+        // 之后的步骤:点击确定的主办方 ->[未编辑的演出详情界面] -> [演出详情编辑页面] ,编辑演出详情. 编辑完成后  ->点击确定 -> 发布.
+        // 如果此次演出机会不是场地方自己发布的.则里面的按钮不可点
+        
+        
+        // 主办方可见 跳转到 -> [演出详情编辑页面] ,编辑演出详情. 编辑完成后  ->点击确定 -> 发布.
+        
+        if (kIGUserType == 1) {
+            //        [MBProgressHUD showWithMessage:@"你的身份不是主办方"];
+            
+            // 场地方 点击发布演出 进入演出详情编辑页 填写演出详情后  点击确定 发布演出
+            PublishShowViewController *publishVC = [[PublishShowViewController alloc] init];
+            publishVC.enable = [model.fieldid isEqualToString:kIGCustId];
+            publishVC.model = model;
+            [self.navigationController pushViewController:publishVC animated:YES];
+        }
+        else
+        {
+            
+            ShowDeatilEditViewController *appVC = [[ShowDeatilEditViewController alloc] init];
+            //               appVC.model = model;
+            [self.navigationController pushViewController:appVC animated:YES];
+            
+        }
+        
+        
+    }
+    //     5已拒绝 **
+    else if ([model.showStatus isEqualToString:@"5"] ) {
+        // 主办方可见 跳转到 申请页面 申请按钮不可点
+        
+        ApplicationShowViewController *appVC = [[ApplicationShowViewController alloc] init];
+        appVC.enable = NO;
+        appVC.model = model;
+        [self.navigationController pushViewController:appVC animated:YES];
+        //        }
+        
+    }
+    //    6.已过期.未发布演出时过期
+    else if ([model.showStatus isEqualToString:@"6"] ) {
+        // 场地方时, -> [演出状态:演出机会关闭页面]
+        if (kIGUserType == 1) {
+            CloseShowViewController *closeVC = [[CloseShowViewController alloc] init];
+            closeVC.model = model;
+            [self.navigationController pushViewController:closeVC animated:YES];
+        }
+        // 主办方 -> 申请页面 :申请按钮不可点
+        else {
+            ApplicationShowViewController *appVC = [[ApplicationShowViewController alloc] init];
+            appVC.enable = NO;
+            appVC.model = model;
+            [self.navigationController pushViewController:appVC animated:YES];
+        }
+    }
+    // 7已关闭(场地方,主办方,乐队)->演出状态,演出已关闭,当这个演出机会在没有或没有确定主办方申请的情况下关闭
+    else if ([model.showStatus isEqualToString:@"7"] ) {
+        // 场地方时, -> [演出状态:演出机会关闭页面]
+        if (kIGUserType == 1) {
+            // 场地方 点击发布演出 进入演出详情编辑页 填写演出详情后  点击确定 发布演出
+            PublishShowViewController *publishVC = [[PublishShowViewController alloc] init];
+            publishVC.enable = [model.fieldid isEqualToString:kIGCustId];
+            publishVC.model = model;
+            [self.navigationController pushViewController:publishVC animated:YES];
+        }
+        // 主办方 -> 申请页面 :申请按钮不可点
+        else {
+            ApplicationShowViewController *appVC = [[ApplicationShowViewController alloc] init];
+            appVC.enable = NO;
+            appVC.model = model;
+            [self.navigationController pushViewController:appVC animated:YES];
+        }
+        
+    }
+    //    8.已发布
+    else if ([model.showStatus isEqualToString:@"8"] ) {
+        DetailShowViewController *showDetailVC = [[DetailShowViewController alloc] init];
+        showDetailVC.showId = [NSNumber numberWithInt:[model.mId intValue]];
+        [self.navigationController pushViewController:showDetailVC animated:YES];
+    }
+    //    9.已关闭  已确定主办方的情况下
+    else if ([model.showStatus isEqualToString:@"9"] ) {
+        // 场地方时, -> [演出状态:演出机会关闭页面]
+        if (kIGUserType == 1) {
+            CloseShowViewController *closeVC = [[CloseShowViewController alloc] init];
+            closeVC.model = model;
+            [self.navigationController pushViewController:closeVC animated:YES];
+        }
+        // 主办方 -> 申请页面 :申请按钮不可点
+        else {
+            ApplicationShowViewController *appVC = [[ApplicationShowViewController alloc] init];
+            appVC.model = model;
+            [self.navigationController pushViewController:appVC animated:YES];
+        }
+    }
+    //    10.已过期 发布的演出过期
+    else if ([model.showStatus isEqualToString:@"10"] ) {
+        // 演出详情页面
+        
+        DetailShowViewController *showDetailVC = [[DetailShowViewController alloc] init];
+        showDetailVC.showId = [NSNumber numberWithInt:[model.mId intValue]];
+        [self.navigationController pushViewController:showDetailVC animated:YES];
+    }
+    
+    else
+    {
+        DetailShowViewController *showDetailVC = [[DetailShowViewController alloc] init];
+        showDetailVC.showId = [NSNumber numberWithInt:[model.mId intValue]];
+        [self.navigationController pushViewController:showDetailVC animated:YES];
+    }
+    
+}
+
+
+- (NSMutableArray *)dataArray
+{
+    if (_dataArray == nil) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

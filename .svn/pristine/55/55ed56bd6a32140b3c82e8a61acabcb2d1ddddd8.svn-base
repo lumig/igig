@@ -1,0 +1,31 @@
+//
+//  PrefixHeader.pch
+//  iGig
+//
+//  Created by admin on 15/10/21.
+//  Copyright © 2015年 longlz. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import "Import.h"
+    #import "AppMacro.h"
+
+#endif
+
+//获取屏幕 宽度、高度
+#define SCREEN_WIDTH ([UIScreen mainScreen].bounds.size.width)
+#define SCREEN_HEIGHT ([UIScreen mainScreen].bounds.size.height)
+
+
+#define RGBACOLOR(r,g,b,a) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:(a)]
+
+#define BTN_ROUTEREVENT   @"kRouterEventBtnTapEventName"
+
+#define PERSONSEARCH_ROUTEREVENT   @"kRouterEventPERSONSEARCHTapEventName"
+
+#endif /* PrefixHeader_pch */

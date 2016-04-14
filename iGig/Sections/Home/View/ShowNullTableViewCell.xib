@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9059" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="KGk-i7-Jjw" customClass="ShowNullTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="182"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="181.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fabuyanchu.png" translatesAutoresizingMaskIntoConstraints="NO" id="8tH-ra-eoh">
+                        <rect key="frame" x="0.0" y="1.5" width="375" height="180"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="2" id="ZoB-UT-JQq"/>
+                            <constraint firstAttribute="height" constant="180" id="cML-ge-O5i"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="ZoB-UT-JQq"/>
+                            </mask>
+                        </variation>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="点击发布演出机会" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X0V-68-CAW">
+                        <rect key="frame" x="158" y="65" width="140" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="140" id="VpL-g0-Hqw"/>
+                            <constraint firstAttribute="height" constant="21" id="yMu-mz-ESc"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="编辑您的演出举办条件. 招募演出主办方. 发起精彩的演出" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FRk-Pb-yon">
+                        <rect key="frame" x="158" y="96" width="179" height="29"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                        <color key="textColor" red="0.43529411759999997" green="0.4431372549" blue="0.47450980390000003" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailingMargin" secondItem="FRk-Pb-yon" secondAttribute="trailing" constant="30" id="49T-L7-6r5"/>
+                    <constraint firstItem="X0V-68-CAW" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="57" id="7mb-WA-1Fq"/>
+                    <constraint firstItem="X0V-68-CAW" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="150" id="Bkc-8u-0FF"/>
+                    <constraint firstAttribute="trailing" secondItem="8tH-ra-eoh" secondAttribute="trailing" id="Gm6-5z-8bq"/>
+                    <constraint firstItem="FRk-Pb-yon" firstAttribute="top" secondItem="X0V-68-CAW" secondAttribute="bottom" constant="10" id="LcZ-Q9-LGS"/>
+                    <constraint firstItem="8tH-ra-eoh" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" id="Xt4-Yh-ZHq"/>
+                    <constraint firstAttribute="bottom" secondItem="8tH-ra-eoh" secondAttribute="bottom" id="ir5-B0-zDf"/>
+                    <constraint firstItem="FRk-Pb-yon" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="150" id="w4Y-Nb-cLV"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" red="0.52941176470588236" green="0.52941176470588236" blue="0.52941176470588236" alpha="1" colorSpace="calibratedRGB"/>
+            <connections>
+                <outlet property="descLabel" destination="X0V-68-CAW" id="f0W-Fl-M5L"/>
+                <outlet property="postersImgView" destination="8tH-ra-eoh" id="8yH-0P-OpL"/>
+            </connections>
+            <point key="canvasLocation" x="339.5" y="300"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="fabuyanchu.png" width="365" height="170"/>
+    </resources>
+</document>

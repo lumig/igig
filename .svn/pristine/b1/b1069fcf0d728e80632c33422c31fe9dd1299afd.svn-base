@@ -1,0 +1,300 @@
+//
+//  IGShowManager.m
+//  IGNetWorking
+//
+//  Created by admin on 15/10/22.
+//  Copyright © 2015年 lifevc_longlz. All rights reserved.
+//
+
+#import "IGShowManager.h"
+
+
+@interface IGShowManager()
+
+@property (strong,nonatomic)NSString  *baseUrl;
+
+@end
+
+@implementation IGShowManager
+
+GTMOBJECT_SINGLETON_BOILERPLATE(IGShowManager,sharedInstance)
+
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.baseUrl = [NSString stringWithFormat:@"%@/show/",HOST_DOMAIN];
+    }
+    return self;
+}
+
+- (void)editsWithUserid:(NSNumber *)userid
+                headpic:(NSNumber *)headpic
+               username:(NSString *)username
+              headImage:(NSString *)headImage
+               usersign:(NSString *)usersign
+                content:(NSString *)content
+                  isHub:(BOOL)isHub
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"edits"] parameters:@{@"userid":userid,@"headpic":headImage,@"usersign":usersign,@"content":usersign,@"content":usersign} isHub:isHub success:success failure:failure];
+}
+
+- (void)editWithUserid:(NSNumber *)userid
+              edittype:(NSNumber *)edittype
+               content:(NSString *)content
+                 isHub:(BOOL)isHub
+               success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+               failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"edit"] parameters:@{@"userid":userid,@"edittype":edittype,@"content":content} isHub:isHub success:success failure:failure];
+}
+
+
+- (void)closeWithShowid:(NSNumber *)showid
+                  isHub:(BOOL)isHub
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"close"] parameters:@{@"showid":showid} isHub:isHub success:success failure:failure];
+}
+
+- (void)addWithTitle:(NSString *)title
+            showTime:(NSString *)showTime
+                dirt:(NSString *)dirt
+               style:(NSString *)style
+               price:(NSString *)price
+             content:(NSString *)content
+              picUrl:(NSString *)picUrl
+            field_id:(NSNumber *)field_id
+             band_id:(NSNumber *)band_id
+               isHub:(BOOL)isHub
+             success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+             failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"add"] parameters:@{@"title":title,@"showTime":showTime,@"dirt":dirt,@"style":style,@"price":price,@"content":content,@"picUrl":picUrl,@"field_id":field_id,@"band_id":band_id} isHub:isHub success:success failure:failure];
+}
+
+- (void)listWithFrom:(NSNumber *)from
+               limit:(NSNumber *)limit utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    if (!utoken) {
+        return;
+    }
+    [self getWithPath:[self getUrlWithPath:@"lists"] parameters:@{@"from":from,@"limit":limit,@"utoken":utoken} isHub:isHub success:success failure:failure];
+}
+
+- (void)listWithFromMonth:(NSString *)date utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    if (!utoken) {
+        return;
+    }
+    [self getWithPath:[self getUrlWithPath:@"lists_month"] parameters:@{@"date":date,@"utoken":utoken} isHub:isHub success:success failure:failure];
+}
+
+- (void)myShowListWithFrom:(NSNumber *)from limit:(NSNumber *)limit type:(NSNumber *)type utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    
+    [self getWithPath:[self getUrlWithPath:@"lists_mine"] parameters:@{@"from":from,@"limit":limit,@"type":type, @"utoken":utoken} isHub:isHub success:success failure:failure];
+}
+
+- (void)showHomeListForDateWithDate:(NSString *)date utoken:(NSString *)utoken IsHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self getWithPath:[self getUrlWithPath:@"datelist"] parameters:@{@"date":date,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)showSearchListFrom:(NSString *)from andLimit:(NSString *)limit title:(NSString *)title isHub:(BOOL)isHub utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self getWithPath:[self getUrlWithPath:@"search"] parameters:@{@"from": from , @"limit": limit, @"title": title, @"utoken": utoken}  isHub:isHub success:success failure:failure];
+}
+
+- (void)pulishShowChanceWithTitle:(NSString *)title showTime:(NSString *)showTime dirt:(NSString *)dirt style:(NSString *)style utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"add"] parameters:@{@"title":title,@"showTime":showTime,@"dirt":dirt,@"style":style,@"utoken":utoken} isHub:isHub success:success failure:failure];
+}
+
+- (void)showListWithIsHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self getWithPath:[self getUrlWithPath:@"datelist_test"] parameters:nil isHub:YES success:success failure:failure];
+}
+
+- (void)applyShowWithTitle:(NSString *)title showTime:(NSString *)showTime dirt:(NSString *)dirt style:(NSString *)style price:(NSString *)price content:(NSString *)content picUrl:(NSString *)picUrl field_id:(NSString *)field_id utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                          title, @"title",
+                          showTime, @"showTime",
+                          dirt, @"dirt",
+                          style, @"style",
+                          price, @"price",
+                          content, @"content",
+                          picUrl, @"picUrl",
+                          field_id, @"field_id",
+                          utoken, @"utoken",
+                          @"3", @"band_id",
+                          nil];
+    
+    NSLog(@"----------%@", dict);
+    
+    [self postWithPath:[self getUrlWithPath:@"addshow"] parameters:dict isHub:YES success:success failure:failure];
+}
+
+- (void)applyWithWithTitle:(NSString *)title showTime:(NSString *)showTime dirt:(NSString *)dirt style:(NSString *)style price:(NSString *)price content:(NSString *)content picUrl:(UIImage *)picUrl field_id:(NSString *)field_id bandName:(NSString *)bandname band_id:(NSArray *)band_id isHub:(BOOL)isHub utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    AFHTTPRequestOperationManager *mgr = [AFHTTPRequestOperationManager manager];
+    mgr.requestSerializer = [AFJSONRequestSerializer serializer];
+    mgr.responseSerializer.acceptableContentTypes =  [NSSet setWithObjects:@"application/json", @"text/html", @"text/json", @"text/javascript",@"text/plain", nil];
+    if (isHub) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            //          [SVProgressHUD show];
+            [SVProgressHUD showWithMaskType:SVProgressHUDMaskTypeGradient];
+        });
+    }
+
+    NSString *path = [self getUrlWithPath:@"addShow"];
+    NSDictionary *parameters = [NSDictionary dictionaryWithObjectsAndKeys:
+                                title, @"title",
+                                showTime, @"showTime",
+                                dirt, @"dirt",
+                                style, @"style",
+                                price, @"price",
+                                content, @"content",
+                                field_id, @"field_id",
+                                utoken, @"utoken",
+                                band_id, @"band_id",
+                                bandname,@"bandname",
+                                nil];
+    [mgr POST:path parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        NSData *data = UIImageJPEGRepresentation(picUrl,0.6);
+        
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"yyyyMMddHHmmss";
+        NSString *str = [formatter stringFromDate:[NSDate date]];
+        NSString *fileName = [NSString stringWithFormat:@"%@_%ld.jpg", str, random()];
+        [formData appendPartWithFileData:data name:@"picUrl" fileName:fileName mimeType:@"image/jpeg"];
+        
+    } success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (isHub) {
+            [SVProgressHUD dismiss];
+        }
+        if ([[responseObject objectForKey:@"error"] integerValue] == 0) {
+            if (success)
+            {
+                success(operation,responseObject);
+            }
+        }else
+        {
+            SHOW_ALERT([responseObject objectForKey:@"msg"]);
+        }
+        
+
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if (isHub) {
+            [SVProgressHUD dismiss];
+        }
+        if (failure) {
+            failure(operation,error);
+        }
+    }];
+    
+    
+    
+
+}
+
+- (void)applyWithShowId:(NSNumber *)showId isHub:(BOOL)isHub utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"apply"] parameters:@{@"showid":showId,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)placeOnlyApplyWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self getWithPath:[self getUrlWithPath:@"lists_apply" ] parameters:@{@"showid":showid,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)showApproveWithId:(NSNumber *)ids ShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"approve" ] parameters:@{@"showid":showid,@"utoken":utoken,@"id":ids} isHub:YES success:success failure:failure];
+}
+
+- (void)showIssuingWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self postWithPath:[self getUrlWithPath:@"issuing"] parameters:@{@"showid": showid, @"utoken":utoken } isHub:YES success:success failure:failure];
+}
+- (void)showDisapproveWithId:(NSNumber *)ids ShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+     [self postWithPath:[self getUrlWithPath:@"disapprove" ] parameters:@{@"showid":showid,@"utoken":utoken,@"id":ids} isHub:YES success:success failure:failure];
+}
+
+- (void)showlists_applyWithShowId:(NSString *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self getWithPath:[self getUrlWithPath:@"lists_apply"] parameters:@{@"showid": showid, @"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+
+
+- (void)placeShowCloseWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"close" ] parameters:@{@"showid":showid,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)placeShowPublishWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"issuing" ] parameters:@{@"showid":showid,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)showDetailWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self getWithPath:[self getUrlWithPath:@"detail" ] parameters:@{@"showid":showid,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)showM5dateWithDate:(NSString *)date utoken:(NSString *)utoken success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    if (!utoken) {
+        return;
+    }
+    [self getWithPath:[self getUrlWithPath:@"m5datelist" ] parameters:@{@"date":date,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+
+- (void)AttentionShowWithFrom:(NSString *)from limit:(NSString *)limit utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self getWithPath:[self getUrlWithPath:@"collectlists"] parameters:@{@"from":from,@"limit":limit,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)collectShowWithShowId:(NSString *)showid utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    [self postWithPath:[self getUrlWithPath:@"collect"] parameters:@{@"showid":showid,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+- (void)followCustWithConcerned_id:(NSString *)concerned_id concerned_type:(NSString *)concerned_type utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self postWithPath:[NSString stringWithFormat:@"%@%@", HOST_DOMAIN, @"/follow/add"] parameters:@{@"concerned_id" : concerned_id , @"concerned_type": concerned_type, @"utoken": utoken} isHub:YES success:success failure:failure];
+}
+
+
+- (void)messageWithFrom:(NSString *)from limit:(NSString *)limit utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    NSString *path = @"http://123.57.215.235/message/lists";
+    [self getWithPath:path parameters:@{@"from":from,@"limit":limit,@"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (void)commentWithShowId:(NSString *)showId utoken:(NSString *)utoken content:(NSString *)content isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure
+{
+    NSString *path = @"http://123.57.215.235/comment/add";
+    [self postWithPath:path
+            parameters:@{@"showid":showId,@"utoken":utoken,@"content":content} isHub:isHub success:success failure:failure];
+}
+
+- (void)selectedCityWithIsHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self getWithPath:[self getUrlWithPath:@"dirt_list_ios"] parameters:nil isHub:YES success:success failure:failure];
+}
+
+- (void)suggestWithContent:(NSString *)content Contact:(NSString *)contact utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure{
+    [self postWithPath:[NSString stringWithFormat:@"%@%@", HOST_DOMAIN, @"/suggest/add"] parameters:@{@"content": content, @"contact":contact, @"utoken":utoken} isHub:YES success:success failure:failure];
+}
+
+- (NSString *)getUrlWithPath:(NSString *)path
+{
+    return [NSString stringWithFormat:@"%@%@",self.baseUrl,path];
+}
+
+
+
+
+
+
+@end

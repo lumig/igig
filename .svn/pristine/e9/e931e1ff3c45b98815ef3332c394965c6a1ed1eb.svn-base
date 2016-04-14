@@ -1,0 +1,165 @@
+//
+//  AddBandViewController.m
+//  iGig
+//
+//  Created by duanzd on 15/11/8.
+//  Copyright © 2015年 longlz. All rights reserved.
+//
+
+#import "AddBandViewController.h"
+#import "BandCell.h"
+#import "AddBandModel.h"
+#import "IGUserManager.h"
+//#import "ShowDeatilEditViewController.h"
+
+
+@interface AddBandViewController ()<UITableViewDataSource, UITableViewDelegate>
+
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) NSMutableArray *dataArray;
+@property (nonatomic, strong) NSMutableArray *isSelected;
+@property (nonatomic, strong) NSMutableArray *selectedBand;
+@property (nonatomic, strong) NSString *bandStr;
+
+@end
+
+@implementation AddBandViewController
+
+- (NSMutableArray *)dataArray{
+    if (nil == _dataArray) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+}
+
+- (NSMutableArray *)selectedBand{
+    if(nil == _selectedBand){
+        _selectedBand = [NSMutableArray array];
+    }
+    return _selectedBand;
+}
+
+- (NSMutableArray *)isSelected{
+    if(nil == _isSelected){
+        _isSelected = [NSMutableArray array];
+        for (int i=0; i<_dataArray.count; i++) {
+            [_isSelected addObject:@"0"];
+        }
+    }
+    return _isSelected;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setNav];
+    [self requestListData];
+    [self createUI];
+}
+
+- (void)setNav{
+    self.title = @"选择乐队";
+    
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = CGRectMake(0, 0, 44, 44);
+    [btn setTitle:@"完成" forState:UIControlStateNormal];
+    [btn addTarget:self action:@selector(rightItemClick) forControlEvents:UIControlEventTouchUpInside];
+    
+
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:btn];
+}
+
+- (void)rightItemClick{
+    self.bandStr = [NSString string];
+    for (int i=0; i<self.isSelected.count; i++) {
+        if([self.isSelected[i] isEqualToString:@"1"]){
+            BandCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
+            [self.selectedBand addObject:cell.bandId];
+            self.bandStr = [self.bandStr stringByAppendingString:cell.name.text];
+        }
+    }
+    NSLog(@"%@", self.bandStr);
+    if (self.editBlock)
+    {
+        self.editBlock(self.bandStr);
+    }
+    
+    if(self.bankBlock)
+    {
+        self.bankBlock(_addArray);
+    }
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)createUI{
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(10, 64+10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 74) style:UITableViewStylePlain];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    self.tableView.backgroundColor = [UIColor clearColor];
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.hidden = YES;
+    [self.view addSubview:self.tableView];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 70;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.dataArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    BandCell *cell = [[BandCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    cell.model = self.dataArray[indexPath.row];
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    BandCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    if([self.isSelected[indexPath.row] isEqualToString:@"0"]){
+        cell.imgChanged(YES);
+        [self.isSelected setObject:@"1" atIndexedSubscript:indexPath.row];
+        [self.addArray addObject:_dataArray[indexPath.row]];
+        NSLog(@"arraty %@",_addArray);
+    }else{
+        cell.imgChanged(NO);
+        [self.isSelected setObject:@"0" atIndexedSubscript:indexPath.row];
+        
+    }
+    
+}
+
+- (void)requestListData{
+    [[IGUserManager sharedInstance] searchBandWithFrom:@"0" limit:@"5" utoken:[IGCustData sharedInstance].token success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSArray *array = responseObject[@"data"];
+        
+        for (NSDictionary *dict in array) {
+            AddBandModel *model = [AddBandModel modelWithDict:dict];
+            
+            [self.dataArray addObject:model];
+        }
+        
+        [self.tableView reloadData];
+        self.tableView.hidden = NO;
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [MBProgressHUD showWithMessage:@"服务器错误"];
+    }];
+}
+
+
+- (NSMutableArray *)addArray
+{
+    if (_addArray == nil) {
+        _addArray = [NSMutableArray array];
+        
+    }
+    
+    return _addArray;
+}
+@end

@@ -1,0 +1,371 @@
+//
+//  MyHomePageViewController.m
+//  iGig
+//
+//  Created by LuMig on 15/10/25.
+//  Copyright © 2015年 longlz. All rights reserved.
+//
+
+#import "MyHomePageViewController.h"
+#import "GHStringManger.h"
+#import "PersonDescTableViewCell.h"
+#import "ShowTableViewCell.h"
+#import "ImgArrayTableViewCell.h"
+#import "CustEditingViewController.h"
+#import "MyHomeModel.h"
+
+@interface MyHomePageViewController ()<UITableViewDelegate,UITableViewDataSource,PersonDescTableViewCellDelegate>
+
+@property(nonatomic,strong)UITableView *tableView;
+@property(nonatomic,strong)NSArray *dataArray;
+@property(nonatomic,strong)PersonModel *model;
+@property(nonatomic,strong)PersonDescTableViewCell *descCell;
+@property(nonatomic,strong)MyHomeModel *homeModel;
+@property(nonatomic,assign)BOOL isOpen;
+@end
+
+@implementation MyHomePageViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    [self setNav];
+    _isOpen = NO;
+    [self requestData];
+    
+    
+//    [self resetUI];
+}
+
+- (void)setNav{
+    //判断主页的custID和单例(IGCustData)中的custID是否一样
+    //设置rightItem的按钮形式和点击效果
+    UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    UIImage *image = [UIImage imageNamed:@"public_setup"];
+    UIImage *image1 = [UIImage imageNamed:@"关注"];
+    rightBtn.frame = CGRectMake(0, 0, image.size.width, image.size.height);
+    [rightBtn addTarget:self action:@selector(rightItemClick) forControlEvents:UIControlEventTouchUpInside];
+    
+    if([[IGCustData sharedInstance].custId isEqualToString:_userId]){
+        [rightBtn setImage:image forState:UIControlStateNormal];
+        [rightBtn setImage:image forState:UIControlStateHighlighted];
+        
+    }else{
+        [rightBtn setImage:image1 forState:UIControlStateNormal];
+        [rightBtn setImage:image1 forState:UIControlStateHighlighted];
+         }
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rightBtn];
+    
+}
+
+- (void)rightItemClick{
+    
+    if([[IGCustData sharedInstance].custId isEqualToString:_userId]){
+        CustEditingViewController *vc = [[CustEditingViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else{
+        //关注
+        [self requestGuanzhu];
+    }
+    
+
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 3;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if (section == 2) {
+        return 2;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *descCellID = @"descCellID"; 
+    _descCell = (PersonDescTableViewCell *)[tableView dequeueReusableCellWithIdentifier:descCellID];
+    
+    static NSString *imgCellID = @"imgCellID";
+    ImgArrayTableViewCell *imgCell = (ImgArrayTableViewCell *)[tableView dequeueReusableCellWithIdentifier:imgCellID];
+    
+    static NSString *showCellID = @"showCellID";
+    ShowTableViewCell *showCell = (ShowTableViewCell *)[tableView dequeueReusableCellWithIdentifier:showCellID];
+    if (indexPath.section == 0) {
+        if (_descCell == nil) {
+            _descCell = [[PersonDescTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:descCellID];
+        }
+        [_descCell cellFillWithStr:_homeModel.content];
+        _descCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        _descCell.delegate = self;
+        return _descCell; 
+    }
+    else if(indexPath.section == 1)
+    {
+        if (imgCell == nil) {
+            imgCell = [[ImgArrayTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:imgCellID];
+        }
+        
+//        [imgCell cellFillWithPersonModel:_model];
+        NSLog(@"-------- %@",_homeModel.picArray);
+        [imgCell cellFillWithArray:_homeModel.picArray];
+         imgCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return imgCell;
+    }
+    else
+    {
+        if (showCell == nil) {
+            showCell = [[[NSBundle mainBundle] loadNibNamed:@"ShowTableViewCell" owner:self options:nil] lastObject];
+        }
+        if (indexPath.row < _homeModel.showArray.count) {
+            [showCell cellFillWithModel:_homeModel.showArray[indexPath.row]];
+        }
+        showCell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+        return showCell;
+    }
+    
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 0) {
+//        PersonDescTableViewCell *descCell = (PersonDescTableViewCell *)[tableView cellForRowAtIndexPath:indexPath.row];
+        return [_descCell cellHeightWithStr:_homeModel.content isOpen:_isOpen];
+        
+    }
+    else if(indexPath.section == 1)
+    {
+        return [ImgArrayTableViewCell cellHeight];
+    }else
+    {
+        return [ShowTableViewCell cellHeight];
+    }
+}
+
+- (void)openButtonClickandIsOpen:(BOOL)isOpen
+{
+    _isOpen = YES;
+    [_tableView reloadData];
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    NSArray *array = @[@"个人简介",@"图片",@"关注的演出"];
+        UIView *header = [[UIView alloc] initWithFrame:CGRectMake(10, 0, SCREEN_WIDTH -20, 40)];
+        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20 , 10, 200, 20)];
+        titleLabel.font = [UIFont systemFontOfSize:15];
+        header.backgroundColor = RGBACOLOR(202, 202, 202, 1);
+        titleLabel.textColor = [UIColor blackColor];
+        [header addSubview:titleLabel];
+//        titleLabel.text = _homeModel.typeName;
+    switch (section) {
+        case 0:
+        {
+            titleLabel.text = array[0];
+        }
+            break;
+        case 1:
+        {
+            titleLabel.text = array[1];
+        }
+            break;
+        case 2:
+        {
+            titleLabel.text = array[2];
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+        
+        return header;
+   
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return 40;
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return 5;
+}
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    UIView *footer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH -20, 5)];
+    
+    footer.backgroundColor = RGBACOLOR(93, 93, 93, 1);
+    return footer;
+}
+
+
+
+- (void)resetUI
+{
+    self.title = _titleStr;
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(10, 64, SCREEN_WIDTH-20, SCREEN_HEIGHT-64) style:UITableViewStyleGrouped];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    _tableView.backgroundColor =  RGBACOLOR(93, 93, 93, 1);
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.tableHeaderView = [self addHeader];
+    [self.view addSubview:_tableView];
+}
+
+- (void)requestData
+{
+    NSLog(@"----%@", _userId);
+    [[IGUserManager sharedInstance] homeWithUserId:_userId utoken:[IGCustData sharedInstance].token isHub:YES success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSDictionary *dict = (NSDictionary *)responseObject;
+        NSDictionary *subDict = dict[@"data"];
+        self.homeModel = [MyHomeModel fetchModelWithDict:subDict];
+        
+        NSLog(@"---%@",_homeModel.userName);
+        [self resetUI];
+        [_tableView reloadData];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"%@",error);
+        [MBProgressHUD showWithMessage:[NSString stringWithFormat:@"%s网络错误",__FUNCTION__]];
+    }];
+}
+
+- (UIView *)addHeader
+{
+    UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH -20, 105)];
+    header.backgroundColor = RGBACOLOR(157, 157, 157, 1);
+    UIView *topView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH -20, 70)];
+    topView.backgroundColor = RGBACOLOR(191, 192, 191, 1);
+    UIImageView *iconImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 50, 50)];
+    iconImgView.layer.cornerRadius = 25;
+    iconImgView.layer.masksToBounds = YES;
+    iconImgView.layer.borderWidth = 1;
+    iconImgView.layer.borderColor = [[UIColor whiteColor] CGColor];
+
+    [iconImgView setImageWithURL:_homeModel.headPic placeholderImage:nil];
+    [topView addSubview:iconImgView];
+    
+    UILabel *nameLabel = [[UILabel alloc] init];
+    nameLabel.text = _homeModel.userName;
+    nameLabel.frame = CGRectMake(70, 10, [GHStringManger stringBoundingRectWithSize:CGSizeMake(SCREEN_WIDTH- 100, 20) font:[UIFont boldSystemFontOfSize:15] text:_homeModel.userName].width, 20);
+    nameLabel.font = [UIFont boldChineseFontWithSize:15];
+    [topView addSubview:nameLabel];
+    UILabel *lvLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(nameLabel.frame)+ 5, 15, 100, 13)];
+    lvLabel.font = [UIFont systemFontOfSize:13];
+    lvLabel.text = _homeModel.level;
+    [topView addSubview:lvLabel];
+    
+    UILabel *descLabel = [[UILabel alloc] initWithFrame:CGRectMake(70, 35, SCREEN_WIDTH-100, 13)];
+    descLabel.font = [UIFont systemFontOfSize:13];
+    descLabel.text = _homeModel.userName;
+    descLabel.textColor = [UIColor grayColor];
+    [topView addSubview:descLabel];
+    
+    UILabel *typeLabel = [[UILabel alloc] initWithFrame:CGRectMake(SCREEN_WIDTH - 130, 47, 100, 13)];
+    typeLabel.font = [UIFont systemFontOfSize:13];
+    typeLabel.textAlignment = NSTextAlignmentRight;
+    typeLabel.textColor = [UIColor grayColor];
+    typeLabel.text = _homeModel.typeName;
+//    switch ([[IGCustData sharedInstance].type intValue]) {
+//        case 1:
+//            typeLabel.text = @"场地方";
+//            break;
+//        case 2:
+//            typeLabel.text = @"主办方";
+//            break;
+//        case 3:
+//            typeLabel.text = @"乐队";
+//            break;
+//        case 4:
+//            typeLabel.text = @"乐迷";
+//            break;
+//            
+//        default:
+//            break;
+//    }
+
+    [topView addSubview:typeLabel];
+    [header addSubview:topView];
+    
+    //
+    UILabel *hotLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 81, [GHStringManger stringBoundingRectWithSize:CGSizeMake(100, 13) font:[UIFont systemFontOfSize:13] text:@"人气"].width, 13)];
+    hotLabel.text =@"人气";
+    hotLabel.font = [UIFont systemFontOfSize:13];
+    hotLabel.textColor = RGBACOLOR(74, 74, 74, 1);
+    [header addSubview:hotLabel];
+    UILabel *hotNumLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(hotLabel.frame)+5, 78, 50, 15)];
+    hotNumLabel.font = [UIFont boldSystemFontOfSize:16];
+    hotNumLabel.textColor = [UIColor whiteColor];
+    hotNumLabel.text = _homeModel.commentNum;
+    [header addSubview:hotNumLabel];
+    
+    UILabel *attShowLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(hotNumLabel.frame) , 81, [GHStringManger stringBoundingRectWithSize:CGSizeMake(100, 13) font:[UIFont systemFontOfSize:13] text:@"关注的演出"].width, 13)];
+    attShowLabel.text =@"关注的演出";
+    attShowLabel.font = [UIFont systemFontOfSize:13];
+    attShowLabel.textColor = RGBACOLOR(74, 74, 74, 1);
+    [header addSubview:attShowLabel];
+    
+    UILabel *attShowNumLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(attShowLabel.frame)+5, 78, 50, 15)];
+    attShowNumLabel.font = [UIFont boldSystemFontOfSize:16];
+    attShowNumLabel.textColor = [UIColor whiteColor];
+    attShowNumLabel.text = _homeModel.followNum;
+    [header addSubview:attShowNumLabel];
+    UILabel *attentionLabel = [[UILabel alloc] initWithFrame:CGRectMake(SCREEN_WIDTH-145,81, [GHStringManger stringBoundingRectWithSize:CGSizeMake(100, 13) font:[UIFont systemFontOfSize:13] text:@"关注的人"].width, 13)];
+    attentionLabel.text =@"关注的人";
+    attentionLabel.font = [UIFont systemFontOfSize:13];
+    attentionLabel.textColor = RGBACOLOR(74, 74, 74, 1);
+    [header addSubview:attentionLabel];
+    UILabel *attentionNumLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(attentionLabel.frame)+5, 78, 50, 15)];
+    attentionNumLabel.font = [UIFont boldSystemFontOfSize:16];
+    attentionNumLabel.textColor = [UIColor whiteColor];
+    attentionNumLabel.text = _homeModel.followedNum;
+    [header addSubview:attentionNumLabel];
+    
+    return header;
+}
+
+- (MyHomeModel *)homeModel
+{
+    if (_homeModel == nil) {
+        _homeModel = [[MyHomeModel alloc] init];
+    }
+    return _homeModel;
+}
+
+- (void)requestGuanzhu{
+    [[IGShowManager sharedInstance] followCustWithConcerned_id:_userId concerned_type:_homeModel.type utoken:[IGCustData sharedInstance].token isHub:YES success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [MBProgressHUD showWithMessage:@"关注成功"];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+//        [MBProgressHUD showWithMessage:@"服务器出错"];
+        [MBProgressHUD showWithMessage:[NSString stringWithFormat:@"%s网络错误",__FUNCTION__]];
+    }];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

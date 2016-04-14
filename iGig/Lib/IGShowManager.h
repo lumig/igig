@@ -1,0 +1,423 @@
+//
+//  IGShowManager.h
+//  IGNetWorking
+//
+//  Created by admin on 15/10/22.
+//  Copyright © 2015年 lifevc_longlz. All rights reserved.
+//
+
+#import "IGBaseManager.h"
+
+@interface IGShowManager : IGBaseManager
+
+
++ (IGShowManager *)sharedInstance;
+
+/*用户_编辑用户多属性
+    userid		int	是	用户id
+    headImage		int	是	头像    //有待询问
+    username	string	是	昵称
+    usersign	string	是	签名
+    content		string	是	个人简介
+ */
+- (void)editsWithUserid:(NSNumber *)userid
+                headpic:(NSNumber *)headpic
+               username:(NSString *)username
+                headImage:(NSString *)headImage
+               usersign:(NSString *)usersign
+                content:(NSString *)content
+                 isHub:(BOOL)isHub
+               success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+               failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 用户_编辑一项内容
+ edittype	int	是	修改类型( headpic头像, username昵称, usersign 签名 , content个人简介)
+ content		string	是	修改内容
+ */
+- (void)editWithUserid:(NSNumber *)userid
+              edittype:(NSNumber *)edittype
+                content:(NSString *)content
+                  isHub:(BOOL)isHub
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 演出接口
+    showid		int	是		演出场次的id
+ */
+- (void)closeWithShowid:(NSNumber *)showid
+                 isHub:(BOOL)isHub
+               success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+               failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 场地方发布演出
+ title	string	是	演出名称
+ showTime	string	是	演出时间
+ dirt	string	是	演出地点
+ style	string	是	演出风格
+ price	string	是	演出票价
+ content	string	是	演出简介
+ picUrl	string	是	图片
+ field_id	Int	是	场地方
+ band_id	int	是	乐队
+ */
+- (void)addWithTitle:(NSString *)title
+                  showTime:(NSString *)showTime
+                dirt:(NSString *)dirt
+               style:(NSString *)style
+               price:(NSString *)price
+             content:(NSString *)content
+              picUrl:(NSString *)picUrl
+            field_id:(NSNumber *)field_id
+             band_id:(NSNumber *)band_id
+               isHub:(BOOL)isHub
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 演出信息列表接
+ from		int	否		第几条记录开始，默认从第1条记录开始
+ limit		int	否		请求多少条记录，默认显示5条
+ */
+- (void)listWithFrom:(NSNumber *)from
+               limit:(NSNumber *)limit utoken:(NSString *)utoken
+               isHub:(BOOL)isHub
+             success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+             failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/**
+ *  演出信息列表(根据传入的date显示特定月份)
+ *
+ *  @param date    日历选择的日期
+ *  @param utoken
+ */
+- (void)listWithFromMonth:(NSString *)date utoken:(NSString *)utoken isHub:(BOOL)isHub success:(void (^)(AFHTTPRequestOperation *, id))success failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure;
+
+
+/*
+ 十、	演出信息列表接口GET（show/lists_mine）（完）
+ 功能说明：调用演出信息
+ 请求url：http://... ~/show/lists_mine
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ from		int	否		第几条记录开始，默认从第1条记录开始
+ limit		int	否		请求多少条记录，默认显示5条
+ type		int	否		1.待处理  2已发布  3 已完结  4.已取消
+ utoken		string	是
+	
+ */
+- (void)myShowListWithFrom:(NSNumber *)from limit:(NSNumber *)limit type:(NSNumber *)type utoken:(NSString *)utoken isHub:(BOOL)isHub
+                   success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+发布演出机会接口POST（show/add） 
+ title	string	是	演出名称
+ showTime	string	是	演出时间
+ dirt	string	是	演出地点
+ style	string	是	演出风格
+ utoken		string	是		utoken验证
+ */
+
+- (void)pulishShowChanceWithTitle:(NSString *)title showTime:(NSString *)showTime dirt:(NSString *)dirt style:(NSString *)style contentext:(NSString *)contentext utoken:(NSString *)utoken isHub:(BOOL)isHub
+                          success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                          failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/* ----演出列表测试
+ 二十四、	根据日期显示演出列表接口GET（show/datelist）
+ 功能说明：
+ date		string	是		日期
+ type		int	否		0全部 1演出机会，2演出，默认为0
+ from		int	否		第几条记录开始，默认从第1条记录开始
+ limit		int	否		请求多少条记录，默认显示5条
+ utoken		string	是		utoken验证
+ */
+- (void)showListWithIsHub:(BOOL)isHub
+                  success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                  failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 根据日期显示首页列表
+ date		string	是		日期
+ type		int	否		0全部 1演出机会，2演出，默认为0
+ from		int	否		第几条记录开始，默认从第1条记录开始
+ limit		int	否		请求多少条记录，默认显示5条
+ utoken		string	是		utoken验证
+ */
+- (void)showHomeListForDateWithDate:(NSString *)date
+                             utoken:(NSString *)utoken
+                              IsHub:(BOOL)isHub
+                             success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                             failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+    搜索演出接口
+ 参数名称	类型	是否必须	描述
+ from		int	否		第几条记录开始，默认从第1条记录开始
+ limit		int	否		请求多少条记录，默认显示5条
+ title		int	否		标题的关键字
+ utoken		string	是		utoken验证
+ */
+- (void)showSearchListFrom:(NSString *)from
+                  andLimit:(NSString *)limit
+                     title:(NSString *)title
+                    isHub:(BOOL)isHub
+                    utoken:(NSString *)utoken
+                   success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+/*
+ 十一、	发布演出接口POST（show/addshow）（完）
+ 功能说明： 场地方发布演出
+ 请求url：http://... ~/show/addshow
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ title	string	是	演出名称
+ showTime	string	是	演出时间
+ dirt	string	是	演出地点
+ style	string	是	演出风格
+ price	string	是	演出票价
+ content	string	是	演出简介
+ picUrl	string	是	图片
+ field_id	Int	是	场地方
+ band_id	int	是	乐队
+ utoken		string	是
+ */
+
+
+- (void)applyShowWithTitle:(NSString *)title
+                  showTime:(NSString *)showTime
+                      dirt:(NSString *)dirt
+                     style:(NSString *)style
+                     price:(NSString *)price
+                   content:(NSString *)content
+                    picUrl:(NSString *)picUrl
+                  field_id:(NSString *)field_id
+                    utoken:(NSString *)utoken
+                   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 十一、	发布演出接口POST（show/addshow）（完）
+ 
+ 改为文件流传播方式
+ */
+- (void)applyWithWithTitle:(NSString *)title
+                  showTime:(NSString *)showTime
+                      dirt:(NSString *)dirt
+                     style:(NSString *)style
+                     price:(NSString *)price
+                   content:(NSString *)content
+                   picUrl:(UIImage *)picUrl
+                  field_id:(NSString *)field_id
+                  bandName:(NSString *) bandname
+                   band_id:(NSArray *)band_id
+                  isHub:(BOOL)isHub
+                    utoken:(NSString *)utoken
+                   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+/*申请演出- 主办方
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证
+ */
+- (void)applyWithShowId:(NSNumber *)showId  isHub:(BOOL)isHub
+                 utoken:(NSString *)utoken
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+/* 场地方 接收申请的列表
+ 单个演出的申请列表接口GET（show/lists_apply）（完）
+ 功能说明：
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid`		int	是		演出id
+ utoken		string	是		utoken验证
+ */
+- (void)placeOnlyApplyWithShowId:(NSNumber *)showid utoken:(NSString *)utoken   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                         failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 三十、	场地方同意申请接口POST（show/approve）（完）
+ 功能说明： 
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ id		int	是		申请列表的id
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证
+ 
+ */
+- (void)showApproveWithId:(NSNumber *)ids ShowId:(NSNumber *)showid utoken:(NSString *)utoken   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                      failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+
+
+/*
+ 五、	发布演出机会流程的发布接口POST（show/issuing）（完）
+ 功能说明：
+ 请求url：http://... ~/show/issuing
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证
+ 
+ */
+- (void)showIssuingWithShowId:(NSString *)showid utoken:(NSString *)utoken   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                              failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 单个演出的申请列表接口GET（show/lists_apply）（完）
+ 功能说明：
+ 请求url：http://... ~/show/lists_apply
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid`		int	是		演出id
+ utoken		string	是		utoken验证
+ */
+- (void)showlists_applyWithShowId:(NSString *)showid utoken:(NSString *)utoken   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                      failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+
+
+/*
+ 三十一、	场地方拒绝申请接口POST（show/disapprove）（完）
+ 功能说明： 
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ id		int	是		申请列表的id
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证	
+ */
+- (void)showDisapproveWithId:(NSNumber *)ids ShowId:(NSNumber *)showid utoken:(NSString *)utoken   success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                  failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 十五、	关闭演出接口POST（show/close）（完）
+ 功能说明： 场地方发布演出  关闭演出机会
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证	
+ 
+ */
+
+- (void)placeShowCloseWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                         failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+/*
+ 十五、	发布演出机会流程的发布接口POST（show/issuing）（完）
+ 功能说明： 场地方发布演出 发布演出
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid		int	是		演出场次的id
+ utoken		string	是		utoken验证	
+ */
+
+- (void)placeShowPublishWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                           failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 十四、	演出详情接口GET（show/detail）（完）
+ 功能说明： 
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid		int	是	演出场次的id
+ utoken		string	是		utoken验证
+ */
+- (void)showDetailWithShowId:(NSNumber *)showid utoken:(NSString *)utoken success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                     failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+
+/*
+ 二十五、	根据某一天演出列表接口GET（show/m5datelist）
+ 功能说明：传入某一个的日期. 返回,前后共5个月,每天有几个演出机会,几个发布的演出. 场地方和主办方显示 演出机会和演出都有, 乐队与只能看到发布的演出. 未登录状态下,仅仅显示发布的演出和歌迷一致
+ 请求url：http://... ~/show/m5datelist
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ date		string	是		日期'2015-10-25'
+ utoken		string	是		utoken验证
+ 
+ */
+- (void)showM5dateWithDate:(NSString *)date utoken:(NSString *)utoken success:(void (^) (AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^) (AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+关注  演出
+ 
+ from
+ limit
+ utoken
+ */
+- (void)AttentionShowWithFrom:(NSString *)from limit:(NSString *)limit utoken:(NSString *) utoken isHub:(BOOL)isHub
+                      success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                      failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*
+ 十六、	收藏演出接口POST（show/collect）（完）
+ 功能说明： 
+ 请求url：http://... ~/show/collect
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ showid		int	是		演出的id
+ utoken		string	是		utoken验证
+ */
+- (void)collectShowWithShowId:(NSString *)showid utoken:(NSString *)utoken isHub:(BOOL)isHub
+                      success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                      failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+/*
+ 十八、	关注用户接口POST（follow/add）（完）
+ 功能说明：
+ 请求url：http://... ~/follow/add
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ concerned_id	int	是	被关注的用户id
+ concerned_type	int	是	被关注的用户类型 (１场地方，２主办方，３乐队　４．乐迷)
+ utoken		string	是
+ */
+
+- (void)followCustWithConcerned_id:(NSString *)concerned_id concerned_type:(NSString *)concerned_type utoken:(NSString *)utoken isHub:(BOOL)isHub
+                           success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                           failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+/*
+ 二十一、	通知列表接口GET（message/lists）（完）
+ 功能说明： 
+ 请求url：http://... ~/message/lists
+ 请求参数：
+ 参数名称	类型	是否必须	描述
+ from		int	否	第几条记录开始，默认从第1条记录开始
+ limit		int	否	请求多少条记录，默认显示5条
+ 
+ */
+- (void)messageWithFrom:(NSString *)from limit:(NSString *)limit utoken:(NSString *)utoken isHub:(BOOL)isHub
+                success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*选择城市*/
+//http://123.57.215.235/show/dirt_list
+
+- (void)selectedCityWithIsHub:(BOOL)isHub
+                      success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                      failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+/*投诉建议*/
+- (void)suggestWithContent:(NSString *)content Contact:(NSString *)contact utoken:(NSString *)utoken isHub:(BOOL)isHub
+                   success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                   failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+
+
+
+/*
+评论接口  comment / add
+ */
+- (void)commentWithShowId:(NSString *)showId utoken:(NSString *)utoken content:(NSString *)content isHub:(BOOL)isHub
+                  success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                  failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
+@end
